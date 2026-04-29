@@ -16,6 +16,7 @@ import com.nexbank.api.mapper.TransactionMapper;
 import com.nexbank.api.repository.BankAccountRepository;
 import com.nexbank.api.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -39,6 +40,7 @@ public class TransactionService {
         this.mapper = mapper;
     }
 
+    @Transactional
     public List<TransferDetailDTO> transfer(TransferRequest request){
 
         validateAmount(request.getAmount());

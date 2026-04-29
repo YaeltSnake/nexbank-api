@@ -1,15 +1,14 @@
 package com.nexbank.api.repository;
 
 import com.nexbank.api.domain.BankAccount;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface BankAccountRepository {
+public interface BankAccountRepository extends JpaRepository<BankAccount, Long> {
 
-    BankAccount save(BankAccount account);
 
-    Optional<BankAccount> findById(Long id);
 
     Optional<BankAccount> findByAccountNumber(String accountNumber);
 
@@ -17,6 +16,5 @@ public interface BankAccountRepository {
 
     boolean existsByAccountNumber(String accountNumber);
 
-    void deleteById(Long id);
 
 }
