@@ -5,7 +5,7 @@
 ![Status](https://img.shields.io/badge/status-active%20development-brightgreen)
 ![Java](https://img.shields.io/badge/Java-17-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.13-green)
-![Phase](https://img.shields.io/badge/phase-1%20complete-blue)
+![Phase](https://img.shields.io/badge/phase-2%20complete-blue)
 
 ---
 
@@ -93,11 +93,12 @@ com.nexbank.api
 
 ## Roadmap
 
-### Phase 2 — Persistence
-- [ ] PostgreSQL + Spring Data JPA
-- [ ] Flyway schema migrations
-- [ ] Replace `*RepositoryMemory` with JPA repositories (zero service-layer changes)
-- [ ] `@Transactional` on transfer operations
+### Phase 2 — Persistence ✅
+- [x] PostgreSQL + Spring Data JPA
+- [x] Flyway schema migrations
+- [x] Replace `*RepositoryMemory` with JPA repositories
+- [x] `@Transactional` on transfer operations
+- [x] Database: nexbank_dev, Schema: banking
 
 ### Phase 3 — Authentication
 - [ ] JWT-based authentication (`LoginRequest` + `LoginResponseDTO` already scaffolded)
