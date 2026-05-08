@@ -3,6 +3,7 @@ package com.nexbank.api.service;
 import com.nexbank.api.controller.request.CreateUserRequest;
 import com.nexbank.api.domain.User;
 import com.nexbank.api.dto.UserDTO;
+import com.nexbank.api.enums.UserRole;
 import com.nexbank.api.exception.DuplicateUserException;
 import com.nexbank.api.exception.UserNotFoundException;
 import com.nexbank.api.mapper.UserMapper;
@@ -31,16 +32,16 @@ public class UserService {
             throw new DuplicateUserException(request.getEmail());
         }
 
-        User.UserBuilder userBuilder = User.builder();
-        userBuilder.firstName(request.getFirstName());
-        userBuilder.lastName(request.getLastName());
-        userBuilder.email(request.getEmail());
-        userBuilder.phoneNumber(request.getPhoneNumber());
-        userBuilder.password(request.getPassword());
-        userBuilder.birthDate(request.getBirthDate());
-        userBuilder.createdAt(LocalDateTime.now());
-
-        User user = userBuilder.build();
+        User user = User.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .phoneNumber(request.getPhoneNumber())
+                .password(request.getPassword())
+                .birthDate(request.getBirthDate())
+                .createdAt(LocalDateTime.now())
+                .role(UserRole.ROLE_CLIENT)
+                .build();
 
         User savedUser = repository.save(user);
         return mapper.toDTO(savedUser);
