@@ -1,6 +1,7 @@
 package com.nexbank.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.nexbank.api.enums.UserRole;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,4 +18,6 @@ public class UserDTO {
     private String phoneNumber;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
+    private UserRole role;
+
 }

@@ -1,5 +1,6 @@
 package com.nexbank.api.dto;
 
+import com.nexbank.api.enums.UserRole;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -10,8 +11,9 @@ import java.time.LocalDateTime;
 public class LoginResponseDTO {
 
     private Long userId;
-    private String emial;
+    private String email;
     private String token;
     private LocalDateTime issuedAt;
+    private UserRole role;
 
 }
