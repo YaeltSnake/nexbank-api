@@ -8,6 +8,7 @@ import com.nexbank.api.exception.DuplicateUserException;
 import com.nexbank.api.exception.UserNotFoundException;
 import com.nexbank.api.mapper.UserMapper;
 import com.nexbank.api.repository.UserRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,10 +21,14 @@ public class UserService {
 
     private final UserRepository repository;
     private final UserMapper mapper;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository repository, UserMapper mapper) {
+    public UserService(UserRepository repository,
+                       UserMapper mapper,
+                       BCryptPasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.mapper = mapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UserDTO registerUser(CreateUserRequest request){
@@ -37,7 +42,7 @@ public class UserService {
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .phoneNumber(request.getPhoneNumber())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .birthDate(request.getBirthDate())
                 .createdAt(LocalDateTime.now())
                 .role(UserRole.ROLE_CLIENT)
@@ -66,6 +71,4 @@ public class UserService {
 
         repository.deleteById(id);
     }
-
-
 }
