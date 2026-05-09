@@ -1,5 +1,6 @@
 package com.nexbank.api.security;
 import com.nexbank.api.domain.User;
+import com.nexbank.api.exception.UserNotFoundException;
 import com.nexbank.api.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,10 +25,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "User not found with email: " + username));
 
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPassword())
-                .authorities(user.getRole().name())
-                .build();
+        return new UserPrincipal(user);
+
     }
 }
