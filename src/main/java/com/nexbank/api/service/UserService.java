@@ -3,13 +3,16 @@ package com.nexbank.api.service;
 import com.nexbank.api.controller.request.CreateUserRequest;
 import com.nexbank.api.domain.User;
 import com.nexbank.api.dto.UserDTO;
+import com.nexbank.api.enums.AccountStatus;
 import com.nexbank.api.enums.UserRole;
+import com.nexbank.api.enums.UserStatus;
 import com.nexbank.api.exception.DuplicateUserException;
 import com.nexbank.api.exception.UserNotFoundException;
 import com.nexbank.api.mapper.UserMapper;
 import com.nexbank.api.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,13 +25,16 @@ public class UserService {
     private final UserRepository repository;
     private final UserMapper mapper;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final AccountService accountService;
 
     public UserService(UserRepository repository,
                        UserMapper mapper,
-                       BCryptPasswordEncoder passwordEncoder) {
+                       BCryptPasswordEncoder passwordEncoder,
+                       AccountService accountService) {
         this.repository = repository;
         this.mapper = mapper;
         this.passwordEncoder = passwordEncoder;
+        this.accountService = accountService;
     }
 
     public UserDTO registerUser(CreateUserRequest request){
@@ -46,6 +52,7 @@ public class UserService {
                 .birthDate(request.getBirthDate())
                 .createdAt(LocalDateTime.now())
                 .role(UserRole.ROLE_CLIENT)
+                .status(UserStatus.ACTIVE)
                 .build();
 
         User savedUser = repository.save(user);
@@ -65,10 +72,23 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public void deleteUser(Long id){
-        repository.findById(id)
+    @Transactional
+    public void updateUserStatus(Long id, UserStatus newStatus){
+        //SUSPENDED ->BLOCKED,   BLOCKED -> BLOCKED,   CLOSED -> CLOSED
+        User user = repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        repository.deleteById(id);
+        user.setStatus(newStatus);
+
+        AccountStatus status = switch (newStatus){
+            case SUSPENDED, BLOCKED -> AccountStatus.BLOCKED;
+            case CLOSED -> AccountStatus.CLOSED;
+            case ACTIVE -> null;
+        };
+
+        if (status != null) {
+            accountService.blockAllAccountsByUser(user, status);
+        }
+
     }
 }
