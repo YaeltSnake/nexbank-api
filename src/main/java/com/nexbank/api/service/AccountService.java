@@ -16,6 +16,7 @@ import com.nexbank.api.mapper.BankAccountMapper;
 import com.nexbank.api.repository.BankAccountRepository;
 import com.nexbank.api.repository.TransactionRepository;
 import com.nexbank.api.repository.UserRepository;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,8 +71,10 @@ public class AccountService {
 
     }
 
-    public List<BankAccountDTO> getAccountsByUser(User user){
+    public List<BankAccountDTO> getAccountsByUser(Long userId){
 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
         List<BankAccount> list = bankAccountRepository.findByOwner(user);
 
         return list.stream().map(mapper::toDTO).collect(Collectors.toList());

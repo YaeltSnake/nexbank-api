@@ -1,6 +1,7 @@
 package com.nexbank.api.repository;
 
 import com.nexbank.api.domain.BankAccount;
+import com.nexbank.api.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -12,7 +13,7 @@ public interface BankAccountRepository extends JpaRepository<BankAccount, Long> 
 
     Optional<BankAccount> findByAccountNumber(String accountNumber);
 
-    List<BankAccount> findByOwnerId(Long userId);
+    List<BankAccount> findByOwner(User owner);
 
     boolean existsByAccountNumber(String accountNumber);
 
