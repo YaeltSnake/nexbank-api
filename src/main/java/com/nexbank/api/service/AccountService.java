@@ -9,9 +9,7 @@ import com.nexbank.api.domain.User;
 import com.nexbank.api.dto.AccountOperationDTO;
 import com.nexbank.api.dto.BankAccountDTO;
 import com.nexbank.api.dto.BankAccountDetailDTO;
-import com.nexbank.api.dto.UserDTO;
 import com.nexbank.api.enums.AccountStatus;
-import com.nexbank.api.enums.AccountType;
 import com.nexbank.api.enums.TransactionType;
 import com.nexbank.api.exception.*;
 import com.nexbank.api.mapper.BankAccountMapper;
@@ -19,12 +17,11 @@ import com.nexbank.api.repository.BankAccountRepository;
 import com.nexbank.api.repository.TransactionRepository;
 import com.nexbank.api.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Scanner;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,7 +50,7 @@ public class AccountService {
         BankAccount account = BankAccount.builder()
                 .accountType(request.getAccountType())
                 .balance(request.getInitialBalance())
-                .status(AccountStatus.ACTIVE)
+                .status(AccountStatus.PENDING)
                 .owner(owner)
                 .openedAt(LocalDateTime.now())
                 .accountNumber(generateAccountNumber())
@@ -73,11 +70,9 @@ public class AccountService {
 
     }
 
-    public List<BankAccountDTO> getAccountsByUser(Long userId){
+    public List<BankAccountDTO> getAccountsByUser(User user){
 
-        getUser(userId);
-
-        List<BankAccount> list = bankAccountRepository.findByOwnerId(userId);
+        List<BankAccount> list = bankAccountRepository.findByOwner(user);
 
         return list.stream().map(mapper::toDTO).collect(Collectors.toList());
 
@@ -136,6 +131,16 @@ public class AccountService {
 
         return dto;
 
+    }
+
+    @Transactional
+    public void blockAllAccountsByUser(User user, AccountStatus newStatus){
+        if (newStatus != null) {
+            List<BankAccount> accounts = bankAccountRepository.findByOwner(user).stream()
+                    .filter(bankAccount -> bankAccount.getStatus() != AccountStatus.CLOSED)
+                    .collect(Collectors.toList());
+            accounts.forEach(bankAccount -> bankAccount.setStatus(newStatus));
+        }
     }
 
     // metodos extras
@@ -202,7 +207,5 @@ public class AccountService {
     private String generateAccountNumber(){
         return "NX" + System.currentTimeMillis();
     }
-
-
 
 }
