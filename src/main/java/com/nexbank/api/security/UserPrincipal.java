@@ -1,6 +1,7 @@
 package com.nexbank.api.security;
 
 import com.nexbank.api.domain.User;
+import com.nexbank.api.enums.UserStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -36,7 +37,7 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return user.getStatus() != UserStatus.BLOCKED;
     }
 
     @Override
@@ -46,6 +47,6 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return user.getStatus() != UserStatus.SUSPENDED && user.getStatus() != UserStatus.CLOSED;
     }
 }
