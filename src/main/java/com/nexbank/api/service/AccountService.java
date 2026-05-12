@@ -135,12 +135,16 @@ public class AccountService {
 
     @Transactional
     public void blockAllAccountsByUser(User user, AccountStatus newStatus){
-        if (newStatus != null) {
-            List<BankAccount> accounts = bankAccountRepository.findByOwner(user).stream()
-                    .filter(bankAccount -> bankAccount.getStatus() != AccountStatus.CLOSED)
-                    .collect(Collectors.toList());
-            accounts.forEach(bankAccount -> bankAccount.setStatus(newStatus));
+        if (newStatus == null) {
+            throw new IllegalArgumentException("Account status cannot be null");
         }
+        if (newStatus == AccountStatus.ACTIVE) {
+            throw new InvalidAccountStatusTransitionException(newStatus);
+        }
+        List<BankAccount> accounts = bankAccountRepository.findByOwner(user).stream()
+                .filter(bankAccount -> bankAccount.getStatus() != AccountStatus.CLOSED)
+                .collect(Collectors.toList());
+        accounts.forEach(bankAccount -> bankAccount.setStatus(newStatus));
     }
 
     // metodos extras
