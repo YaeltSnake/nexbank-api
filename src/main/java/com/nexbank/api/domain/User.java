@@ -1,6 +1,7 @@
 package com.nexbank.api.domain;
 
 import com.nexbank.api.enums.UserRole;
+import com.nexbank.api.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -44,4 +45,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)
     private UserRole role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private UserStatus status;
+
 }
