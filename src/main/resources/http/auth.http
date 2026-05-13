@@ -1,12 +1,12 @@
-### Register User
+### Register user
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 
 {
-  "firstName": "Juan",
-  "lastName": "Carlos",
-  "email": "juan.carlos@nexbank.com",
+  "firstName": "Carlos",
+  "lastName": "Alberto",
+  "email": "carlos.alberto@nexbank.com",
   "phoneNumber": "5512345678",
-  "password": "password123",
-  "birthDate": "2000-01-01"
+  "password": "Password123!",
+  "birthDate": "1995-06-15"
 }

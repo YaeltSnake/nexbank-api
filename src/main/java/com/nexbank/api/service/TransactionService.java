@@ -3,7 +3,6 @@ package com.nexbank.api.service;
 import com.nexbank.api.controller.request.TransferRequest;
 import com.nexbank.api.domain.BankAccount;
 import com.nexbank.api.domain.Transaction;
-import com.nexbank.api.dto.BankAccountDTO;
 import com.nexbank.api.dto.TransactionDTO;
 import com.nexbank.api.dto.TransferDetailDTO;
 import com.nexbank.api.enums.AccountStatus;
@@ -42,6 +41,7 @@ public class TransactionService {
 
     @Transactional
     public List<TransferDetailDTO> transfer(TransferRequest request){
+        LocalDateTime now = LocalDateTime.now();
 
         validateAmount(request.getAmount());
 
@@ -56,13 +56,14 @@ public class TransactionService {
         substractSourceBalance(sourceAccount, request.getAmount());
         addTargetBalance(targetAccount, request.getAmount());
 
-        TransferDetailDTO sourceDTO = registerTransferOut(sourceAccount, targetAccount, request.getAmount(), "Transfer-Out");
-        TransferDetailDTO targetDTO = registerTransferIn(targetAccount, sourceAccount, request.getAmount(), "Transfer -In");
+        TransferDetailDTO sourceDTO = registerTransfer(TransactionType.TRANSFER_OUT, request.getAmount(), sourceAccount, targetAccount, "Transfer-Out", now);
+        TransferDetailDTO targetDTO = registerTransfer(TransactionType.TRANSFER_IN,  request.getAmount(),targetAccount, sourceAccount, "Transfer-In", now);
 
-        return new ArrayList<TransferDetailDTO>(Arrays.asList(sourceDTO,targetDTO));
+        return new ArrayList<>(Arrays.asList(sourceDTO,targetDTO));
 
     }
 
+    @Transactional(readOnly = true)
     public List<TransactionDTO> getTransactionsByAccount(Long accountId){
         BankAccount account = getAccount(accountId);
         return transactionRepository
@@ -97,17 +98,16 @@ public class TransactionService {
         }
     }
 
-    private TransferDetailDTO registerTransferOut(BankAccount account,
-                                                 BankAccount accountReference,
-                                                 BigDecimal amount, String message){
+    private TransferDetailDTO registerTransfer(TransactionType type, BigDecimal amount, BankAccount account,
+                                                  BankAccount accountReference,String message, LocalDateTime now){
 
         Transaction.TransactionBuilder transactionBuilder = Transaction.builder();
-        transactionBuilder.type(TransactionType.TRANSFER_OUT);
+        transactionBuilder.type(type);
         transactionBuilder.amount(amount);
         transactionBuilder.account(account);
         transactionBuilder.targetAccountNumber(accountReference.getAccountNumber());
         transactionBuilder.description(message);
-        transactionBuilder.executedAt(LocalDateTime.now());
+        transactionBuilder.executedAt(now);
 
         Transaction transaction = transactionBuilder.build();
 
@@ -116,27 +116,6 @@ public class TransactionService {
         return mapper.toTransferDetailDTO(transaction);
 
     }
-
-    private TransferDetailDTO registerTransferIn(BankAccount account,
-                                                BankAccount accountReference,
-                                                BigDecimal amount, String message){
-
-        Transaction.TransactionBuilder transactionBuilder = Transaction.builder();
-        transactionBuilder.type(TransactionType.TRANSFER_IN);
-        transactionBuilder.amount(amount);
-        transactionBuilder.account(account);
-        transactionBuilder.targetAccountNumber(accountReference.getAccountNumber());
-        transactionBuilder.description(message);
-        transactionBuilder.executedAt(LocalDateTime.now());
-
-        Transaction transaction = transactionBuilder.build();
-
-        transactionRepository.save(transaction);
-
-        return mapper.toTransferDetailDTO(transaction);
-
-    }
-
 
     private void substractSourceBalance(BankAccount account, BigDecimal amount){
         account.setBalance(account.getBalance().subtract(amount));

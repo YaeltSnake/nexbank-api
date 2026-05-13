@@ -19,6 +19,7 @@ import com.nexbank.api.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -62,6 +63,7 @@ public class AccountService {
 
     }
 
+    @Transactional(readOnly = true)
     public BankAccountDetailDTO getAccountById(Long id){
 
         BankAccount account = getAccount(id);
@@ -92,7 +94,7 @@ public class AccountService {
         BigDecimal balanceBefore = account.getBalance();
         account.setBalance(balanceBefore.add(request.getAmount()));
 
-        Transaction tx = saveDepositTransaction(account, request.getAmount(), now);
+        Transaction tx = saveTransaction(TransactionType.DEPOSIT, account, request.getAmount(), now, "Deposit");
 
         AccountOperationDTO dto = AccountOperationDTO.builder()
                 .accountId(account.getId())
@@ -123,7 +125,7 @@ public class AccountService {
         BigDecimal balanceBefore = account.getBalance();
         account.setBalance(balanceBefore.subtract(request.getAmount()));
 
-        Transaction tx = saveWithdrawTransaction(account, request.getAmount(), now);
+        Transaction tx = saveTransaction(TransactionType.WITHDRAWAL, account, request.getAmount(), now, "Withdraw");
 
         AccountOperationDTO dto = AccountOperationDTO.builder()
                 .accountId(account.getId())
@@ -188,26 +190,15 @@ public class AccountService {
 
     }
 
-    private Transaction saveDepositTransaction(BankAccount account, BigDecimal amount, LocalDateTime dateTime){
+
+    private Transaction saveTransaction(TransactionType type, BankAccount account,
+                                        BigDecimal amount, LocalDateTime now, String description){
         Transaction tx = Transaction.builder()
-                .type(TransactionType.DEPOSIT)
+                .type(type)
                 .amount(amount)
                 .account(account)
-                .executedAt(dateTime)
-                .description("Deposit")
-                .build();
-
-        return transactionRepository.save(tx);
-
-    }
-
-    private Transaction saveWithdrawTransaction(BankAccount account, BigDecimal amount, LocalDateTime localDateTime){
-        Transaction tx = Transaction.builder()
-                .type(TransactionType.WITHDRAWAL)
-                .amount(amount)
-                .account(account)
-                .executedAt(localDateTime)
-                .description("Withdraw")
+                .executedAt(now)
+                .description(description)
                 .build();
 
         return transactionRepository.save(tx);
