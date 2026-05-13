@@ -59,7 +59,7 @@ public class TransactionService {
         TransferDetailDTO sourceDTO = registerTransfer(TransactionType.TRANSFER_OUT, request.getAmount(), sourceAccount, targetAccount, "Transfer-Out", now);
         TransferDetailDTO targetDTO = registerTransfer(TransactionType.TRANSFER_IN,  request.getAmount(),targetAccount, sourceAccount, "Transfer-In", now);
 
-        return new ArrayList<>(Arrays.asList(sourceDTO,targetDTO));
+        return new ArrayList<>(List.of(sourceDTO,targetDTO));
 
     }
 
