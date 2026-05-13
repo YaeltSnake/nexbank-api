@@ -10,7 +10,7 @@ import com.nexbank.api.exception.DuplicateUserException;
 import com.nexbank.api.exception.UserNotFoundException;
 import com.nexbank.api.mapper.UserMapper;
 import com.nexbank.api.repository.UserRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,12 +24,12 @@ public class UserService {
 
     private final UserRepository repository;
     private final UserMapper mapper;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     private final AccountService accountService;
 
     public UserService(UserRepository repository,
                        UserMapper mapper,
-                       BCryptPasswordEncoder passwordEncoder,
+                       PasswordEncoder passwordEncoder,
                        AccountService accountService) {
         this.repository = repository;
         this.mapper = mapper;
