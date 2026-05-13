@@ -16,7 +16,6 @@ import com.nexbank.api.mapper.BankAccountMapper;
 import com.nexbank.api.repository.BankAccountRepository;
 import com.nexbank.api.repository.TransactionRepository;
 import com.nexbank.api.repository.UserRepository;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,7 +80,10 @@ public class AccountService {
 
     }
 
+    @Transactional
     public AccountOperationDTO deposit(Long accountId, DepositRequest request){
+
+        LocalDateTime now = LocalDateTime.now();
 
         validateAmount(request.getAmount());
         BankAccount account = getAccount(accountId);
@@ -89,9 +91,8 @@ public class AccountService {
 
         BigDecimal balanceBefore = account.getBalance();
         account.setBalance(balanceBefore.add(request.getAmount()));
-        bankAccountRepository.save(account);
 
-        Transaction tx = saveDepositTransaction(account, request.getAmount());
+        Transaction tx = saveDepositTransaction(account, request.getAmount(), now);
 
         AccountOperationDTO dto = AccountOperationDTO.builder()
                 .accountId(account.getId())
@@ -100,7 +101,7 @@ public class AccountService {
                 .balanceAfter(account.getBalance())
                 .operationType(tx.getType())
                 .amount(request.getAmount())
-                .timestamp(LocalDateTime.now())
+                .timestamp(now)
                 .build();
 
         return dto;
@@ -109,7 +110,10 @@ public class AccountService {
 
 
 
+    @Transactional
     public AccountOperationDTO withdraw(Long accountId, WithdrawalRequest request){
+
+        LocalDateTime now = LocalDateTime.now();
 
         validateAmount(request.getAmount());
         BankAccount account = getAccount(accountId);
@@ -118,9 +122,8 @@ public class AccountService {
 
         BigDecimal balanceBefore = account.getBalance();
         account.setBalance(balanceBefore.subtract(request.getAmount()));
-        bankAccountRepository.save(account);
 
-        Transaction tx = saveWithdrawTransaction(account, request.getAmount());
+        Transaction tx = saveWithdrawTransaction(account, request.getAmount(), now);
 
         AccountOperationDTO dto = AccountOperationDTO.builder()
                 .accountId(account.getId())
@@ -129,7 +132,7 @@ public class AccountService {
                 .balanceAfter(account.getBalance())
                 .operationType(tx.getType())
                 .amount(request.getAmount())
-                .timestamp(LocalDateTime.now())
+                .timestamp(now)
                 .build();
 
         return dto;
@@ -185,12 +188,12 @@ public class AccountService {
 
     }
 
-    private Transaction saveDepositTransaction(BankAccount account, BigDecimal amount){
+    private Transaction saveDepositTransaction(BankAccount account, BigDecimal amount, LocalDateTime dateTime){
         Transaction tx = Transaction.builder()
                 .type(TransactionType.DEPOSIT)
                 .amount(amount)
                 .account(account)
-                .executedAt(LocalDateTime.now())
+                .executedAt(dateTime)
                 .description("Deposit")
                 .build();
 
@@ -198,12 +201,12 @@ public class AccountService {
 
     }
 
-    private Transaction saveWithdrawTransaction(BankAccount account, BigDecimal amount){
+    private Transaction saveWithdrawTransaction(BankAccount account, BigDecimal amount, LocalDateTime localDateTime){
         Transaction tx = Transaction.builder()
                 .type(TransactionType.WITHDRAWAL)
                 .amount(amount)
                 .account(account)
-                .executedAt(LocalDateTime.now())
+                .executedAt(localDateTime)
                 .description("Withdraw")
                 .build();
 
