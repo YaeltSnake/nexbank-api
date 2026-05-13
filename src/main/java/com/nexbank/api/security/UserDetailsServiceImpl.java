@@ -1,6 +1,5 @@
 package com.nexbank.api.security;
 import com.nexbank.api.domain.User;
-import com.nexbank.api.exception.UserNotFoundException;
 import com.nexbank.api.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
