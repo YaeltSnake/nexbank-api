@@ -1,4 +1,4 @@
-package com.nexbank.api.security;
+package com.nexbank.api.infrastructure.security;
 import com.nexbank.api.domain.User;
 import com.nexbank.api.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
