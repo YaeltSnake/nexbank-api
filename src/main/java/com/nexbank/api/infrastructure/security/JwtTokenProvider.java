@@ -1,7 +1,12 @@
 package com.nexbank.api.infrastructure.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +15,7 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.io.Decoders;
 import java.util.Date;
 
+@Slf4j
 @Component
 public class JwtTokenProvider {
 
@@ -22,10 +28,16 @@ public class JwtTokenProvider {
     @Value("${app.jwt.refresh-expiration-ms}")
     private long refreshExpirationMs;
 
-    private SecretKey getSigningKey() {
-        byte[] keyByters = Decoders.BASE64.decode(secret);
+    private SecretKey signingKey;
 
-        return Keys.hmacShaKeyFor(keyByters);
+
+    @PostConstruct
+    private void initSigningKey(){
+
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+
+        this.signingKey = Keys.hmacShaKeyFor(keyBytes);
+
     }
 
     public String generateAccessToken(UserPrincipal userPrincipal) {
@@ -36,7 +48,7 @@ public class JwtTokenProvider {
                 .claim("role", userPrincipal.getAuthorities().iterator().next().getAuthority())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
-                .signWith(getSigningKey())
+                .signWith(this.signingKey)
                 .compact();
     }
 
@@ -45,7 +57,7 @@ public class JwtTokenProvider {
                 .subject(email)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + refreshExpirationMs))
-                .signWith(getSigningKey())
+                .signWith(this.signingKey)
                 .compact();
     }
 
@@ -61,17 +73,24 @@ public class JwtTokenProvider {
         try {
             extractAllClaims(token);
             return true;
-        }catch (io.jsonwebtoken.JwtException | IllegalArgumentException e){
-
+        }catch (ExpiredJwtException e){
+            log.debug("JWT validation failed: token expired");
             return false;
-
+        }catch (SignatureException e){
+            log.debug("JWT validation failed: invalid signature — possible token tampering");
+            return false;
+        }catch (MalformedJwtException e){
+            log.debug("JWT validation failed: malformed token structure");
+            return false;
+        }catch (IllegalArgumentException e){
+            log.debug("JWT validation failed: token is null or empty");
+            return false;
         }
-
     }
 
     private Claims extractAllClaims(String token){
         return Jwts.parser()
-                .verifyWith(getSigningKey())
+                .verifyWith(this.signingKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
