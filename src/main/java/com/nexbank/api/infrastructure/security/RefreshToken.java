@@ -16,7 +16,7 @@ public class RefreshToken {
 
     @Id
     @Column(name = "token_id", unique = true, nullable = false)
-    private UUID tokenId;
+    private UUID tokenId
 
     @Column(name = "token", unique = true, nullable = false)
     private String token;
